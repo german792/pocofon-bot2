@@ -93,7 +93,8 @@
     "bubacoolpromaxstudio2",
     "glebzeon",
     "usermelonj",
-    "mawlexx"
+    "mawlexx",
+    "t_ipew"
   ],
   "allowed_user_ids": [
     7148172629,
@@ -164,7 +165,8 @@
     7755091974,
     7182027452,
     8226434636,
-    5347874350
+    5347874350,
+    8038226948
   ],
   "allowed_groups": {
     "-1004328649380": {
@@ -842,6 +844,14 @@
       "username": "Mawlexx",
       "name": "qwww",
       "added_at": 1795542169.7813683,
+      "added_by": "group_-1004328649380",
+      "role": "user"
+    },
+    "t_ipew": {
+      "user_id": 8038226948,
+      "username": "T_ipew",
+      "name": "ebani_chemodan_skolko_ya_k_tebe_shel🍌",
+      "added_at": 1795542183.0359075,
       "added_by": "group_-1004328649380",
       "role": "user"
     }
