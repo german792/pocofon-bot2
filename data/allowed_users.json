@@ -88,7 +88,8 @@
     "fikusiknew",
     "sava280",
     "mellstudiodev",
-    "robovski10"
+    "robovski10",
+    "tima374273"
   ],
   "allowed_user_ids": [
     7148172629,
@@ -154,7 +155,8 @@
     8117355401,
     8979341868,
     7331355990,
-    8640652598
+    8640652598,
+    8221661176
   ],
   "allowed_groups": {
     "-1004328649380": {
@@ -792,6 +794,14 @@
       "username": "Robovski10",
       "name": "NeuroKesha и Зюзька🇫🇷",
       "added_at": 1795542136.701028,
+      "added_by": "group_-1004328649380",
+      "role": "user"
+    },
+    "tima374273": {
+      "user_id": 8221661176,
+      "username": "tima374273",
+      "name": "￴￴￴ ￴ ￴￴ ￴￴ ￴￴ ￴￴￴￴￴ ￴ ￴",
+      "added_at": 1795542152.6020274,
       "added_by": "group_-1004328649380",
       "role": "user"
     }
