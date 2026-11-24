@@ -89,7 +89,8 @@
     "sava280",
     "mellstudiodev",
     "robovski10",
-    "tima374273"
+    "tima374273",
+    "bubacoolpromaxstudio2"
   ],
   "allowed_user_ids": [
     7148172629,
@@ -156,7 +157,8 @@
     8979341868,
     7331355990,
     8640652598,
-    8221661176
+    8221661176,
+    7755091974
   ],
   "allowed_groups": {
     "-1004328649380": {
@@ -802,6 +804,14 @@
       "username": "tima374273",
       "name": "￴￴￴ ￴ ￴￴ ￴￴ ￴￴ ￴￴￴￴￴ ￴ ￴",
       "added_at": 1795542152.6020274,
+      "added_by": "group_-1004328649380",
+      "role": "user"
+    },
+    "bubacoolpromaxstudio2": {
+      "user_id": 7755091974,
+      "username": "Bubacoolpromaxstudio2",
+      "name": "Bubacoolpromaxstudio",
+      "added_at": 1795542155.9899707,
       "added_by": "group_-1004328649380",
       "role": "user"
     }
