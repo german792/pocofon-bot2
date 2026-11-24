@@ -96,7 +96,8 @@
     "mawlexx",
     "t_ipew",
     "fapyh",
-    "dahhhhhhhj"
+    "dahhhhhhhj",
+    "paveldurka1338"
   ],
   "allowed_user_ids": [
     7148172629,
@@ -170,7 +171,8 @@
     5347874350,
     8038226948,
     7367988390,
-    8985222453
+    8985222453,
+    6412092272
   ],
   "allowed_groups": {
     "-1004328649380": {
@@ -872,6 +874,14 @@
       "username": "dahhhhhhhj",
       "name": "𝒟𝒶𝓈𝒽𝒶",
       "added_at": 1795542311.5741549,
+      "added_by": "group_-1004328649380",
+      "role": "user"
+    },
+    "paveldurka1338": {
+      "user_id": 6412092272,
+      "username": "Paveldurka1338",
+      "name": "Марк",
+      "added_at": 1795542841.0786471,
       "added_by": "group_-1004328649380",
       "role": "user"
     }
