@@ -91,7 +91,8 @@
     "robovski10",
     "tima374273",
     "bubacoolpromaxstudio2",
-    "glebzeon"
+    "glebzeon",
+    "usermelonj"
   ],
   "allowed_user_ids": [
     7148172629,
@@ -160,7 +161,8 @@
     8640652598,
     8221661176,
     7755091974,
-    7182027452
+    7182027452,
+    8226434636
   ],
   "allowed_groups": {
     "-1004328649380": {
@@ -822,6 +824,14 @@
       "username": "glebzeon",
       "name": "глеб зеоненко",
       "added_at": 1795542164.3423746,
+      "added_by": "group_-1004328649380",
+      "role": "user"
+    },
+    "usermelonj": {
+      "user_id": 8226434636,
+      "username": "Usermelonj",
+      "name": "Нейронка",
+      "added_at": 1795542166.7357185,
       "added_by": "group_-1004328649380",
       "role": "user"
     }
