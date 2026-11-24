@@ -84,7 +84,8 @@
     "svosav",
     "youtube_offical67",
     "ai_chips1",
-    "artur4hick"
+    "artur4hick",
+    "fikusiknew"
   ],
   "allowed_user_ids": [
     7148172629,
@@ -146,7 +147,8 @@
     8524396097,
     6567685808,
     6145707828,
-    5911700520
+    5911700520,
+    8117355401
   ],
   "allowed_groups": {
     "-1004328649380": {
@@ -752,6 +754,14 @@
       "username": "Artur4hick",
       "name": "БарбоИИ",
       "added_at": 1795457333.8945653,
+      "added_by": "group_-1004328649380",
+      "role": "user"
+    },
+    "fikusiknew": {
+      "user_id": 8117355401,
+      "username": "fikusiknew",
+      "name": "𝗙𝗶𝗸𝘂𝘀",
+      "added_at": 1795542121.519386,
       "added_by": "group_-1004328649380",
       "role": "user"
     }
