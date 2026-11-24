@@ -94,7 +94,9 @@
     "glebzeon",
     "usermelonj",
     "mawlexx",
-    "t_ipew"
+    "t_ipew",
+    "fapyh",
+    "dahhhhhhhj"
   ],
   "allowed_user_ids": [
     7148172629,
@@ -166,7 +168,9 @@
     7182027452,
     8226434636,
     5347874350,
-    8038226948
+    8038226948,
+    7367988390,
+    8985222453
   ],
   "allowed_groups": {
     "-1004328649380": {
@@ -852,6 +856,22 @@
       "username": "T_ipew",
       "name": "ebani_chemodan_skolko_ya_k_tebe_shel🍌",
       "added_at": 1795542183.0359075,
+      "added_by": "group_-1004328649380",
+      "role": "user"
+    },
+    "fapyh": {
+      "user_id": 7367988390,
+      "username": "fapyh",
+      "name": "хавьер эскуэлла",
+      "added_at": 1795542183.4161294,
+      "added_by": "group_-1004328649380",
+      "role": "user"
+    },
+    "dahhhhhhhj": {
+      "user_id": 8985222453,
+      "username": "dahhhhhhhj",
+      "name": "𝒟𝒶𝓈𝒽𝒶",
+      "added_at": 1795542311.5741549,
       "added_by": "group_-1004328649380",
       "role": "user"
     }
