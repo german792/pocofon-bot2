@@ -87,7 +87,8 @@
     "artur4hick",
     "fikusiknew",
     "sava280",
-    "mellstudiodev"
+    "mellstudiodev",
+    "robovski10"
   ],
   "allowed_user_ids": [
     7148172629,
@@ -152,7 +153,8 @@
     5911700520,
     8117355401,
     8979341868,
-    7331355990
+    7331355990,
+    8640652598
   ],
   "allowed_groups": {
     "-1004328649380": {
@@ -782,6 +784,14 @@
       "username": "MellStudioDev",
       "name": "джейлбрейк@права",
       "added_at": 1795542131.7577379,
+      "added_by": "group_-1004328649380",
+      "role": "user"
+    },
+    "robovski10": {
+      "user_id": 8640652598,
+      "username": "Robovski10",
+      "name": "NeuroKesha и Зюзька🇫🇷",
+      "added_at": 1795542136.701028,
       "added_by": "group_-1004328649380",
       "role": "user"
     }
