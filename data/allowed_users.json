@@ -97,7 +97,8 @@
     "t_ipew",
     "fapyh",
     "dahhhhhhhj",
-    "paveldurka1338"
+    "paveldurka1338",
+    "kling45pro"
   ],
   "allowed_user_ids": [
     7148172629,
@@ -882,6 +883,14 @@
       "username": "Paveldurka1338",
       "name": "Марк",
       "added_at": 1795542841.0786471,
+      "added_by": "group_-1004328649380",
+      "role": "user"
+    },
+    "kling45pro": {
+      "user_id": 8871319864,
+      "username": "kling45pro",
+      "name": "blanklw",
+      "added_at": 1795625124.4163742,
       "added_by": "group_-1004328649380",
       "role": "user"
     }
