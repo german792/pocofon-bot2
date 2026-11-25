@@ -98,7 +98,8 @@
     "fapyh",
     "dahhhhhhhj",
     "paveldurka1338",
-    "kling45pro"
+    "kling45pro",
+    "wan3video"
   ],
   "allowed_user_ids": [
     7148172629,
@@ -891,6 +892,14 @@
       "username": "kling45pro",
       "name": "blanklw",
       "added_at": 1795625124.4163742,
+      "added_by": "group_-1004328649380",
+      "role": "user"
+    },
+    "wan3video": {
+      "user_id": 8524396097,
+      "username": "Wan3video",
+      "name": "КЕША|ИИ",
+      "added_at": 1795630272.8300118,
       "added_by": "group_-1004328649380",
       "role": "user"
     }
