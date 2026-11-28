@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import httpx
 
@@ -80,6 +80,7 @@ class TrycenaClient:
         ).strip()
         self._jwt: str = ""
         self._jwt_expires_at: float = 0.0
+        self._workspace_id: Optional[int] = None
         self._lock = asyncio.Lock()
 
     def get_full_url(self, url_or_path: str) -> str:
@@ -138,6 +139,59 @@ class TrycenaClient:
             h.update(extra)
         return h
 
+    async def _ensure_workspace(self) -> int:
+        """Return an active workspace ID on trycena.studio for uploading photo references."""
+        if self._workspace_id is not None:
+            return self._workspace_id
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            headers = await self._auth_headers(extra={"Content-Type": "application/json"})
+            r = await client.get(f"{self.base_url}/api/workspaces", headers=headers)
+            if r.status_code == 200:
+                ws_list = r.json().get("data") or []
+                if ws_list and isinstance(ws_list[0], dict) and ws_list[0].get("id"):
+                    self._workspace_id = int(ws_list[0]["id"])
+                    return self._workspace_id
+            # Create one if none exists yet
+            rc = await client.post(
+                f"{self.base_url}/api/workspaces",
+                headers=headers,
+                json={"name": "PocoAI Refs"},
+            )
+            if rc.status_code in (200, 201):
+                ws = rc.json().get("data") or rc.json()
+                if isinstance(ws, dict) and ws.get("id"):
+                    self._workspace_id = int(ws["id"])
+                    return self._workspace_id
+            raise RuntimeError(f"Не удалось подготовить рабочее пространство для референсов ({rc.status_code}).")
+
+    async def upload_reference_image(self, image_bytes: bytes, idx: int = 1) -> int:
+        """Upload a photo reference to the active workspace and return its imageId."""
+        ws_id = await self._ensure_workspace()
+        fname = f"ref_{int(time.time())}_{idx}.jpg"
+        async with httpx.AsyncClient(timeout=45.0) as client:
+            headers = await self._auth_headers()
+            resp = await client.post(
+                f"{self.base_url}/api/workspaces/{ws_id}/images",
+                headers=headers,
+                files={"image": (fname, image_bytes, "image/jpeg")},
+                data={"name": fname},
+            )
+            if resp.status_code == 401:
+                headers = await self._auth_headers(force_refresh=True)
+                resp = await client.post(
+                    f"{self.base_url}/api/workspaces/{ws_id}/images",
+                    headers=headers,
+                    files={"image": (fname, image_bytes, "image/jpeg")},
+                    data={"name": fname},
+                )
+            if resp.status_code >= 400:
+                raise RuntimeError(f"Ошибка загрузки фото-референса ({resp.status_code}): {resp.text[:180]}")
+            data = resp.json().get("data") or resp.json()
+            img_id = data.get("id") if isinstance(data, dict) else None
+            if not img_id:
+                raise RuntimeError("Сервер не вернул ID загруженного фото-референса.")
+            return int(img_id)
+
     async def create_video_task(
         self,
         model_info: Dict[str, Any],
@@ -146,8 +200,10 @@ class TrycenaClient:
         resolution: str = "720p",
         ratio: str = "16:9",
         generate_audio: bool = True,
+        ref_images: Optional[List[bytes]] = None,
+        ref_mode: str = "omni",
     ) -> str:
-        """Submit POST /api/generate-video and return taskId."""
+        """Submit POST /api/generate-video (with optional photo references) and return taskId."""
         model_id = str(model_info.get("api_id") or "seedance-2.0-fast")
         allowed_durs = model_info.get("durations") or [5]
         dur = int(duration or allowed_durs[0])
@@ -162,6 +218,30 @@ class TrycenaClient:
             "duration": dur,
             "generate_audio": bool(generate_audio) if model_info.get("has_audio") else False,
         }
+
+        imgs = [b for b in (ref_images or []) if b]
+        max_refs = int(model_info.get("ref_limit") or 0)
+        if imgs and max_refs > 0:
+            ws_id = await self._ensure_workspace()
+            use_multi = bool(model_info.get("multi_ref"))
+            uploaded_ids: List[int] = []
+            for idx, img_bytes in enumerate(imgs[:max_refs], start=1):
+                uploaded_ids.append(await self.upload_reference_image(img_bytes, idx=idx))
+
+            image_inputs: List[Dict[str, Any]] = []
+            if ref_mode == "frames" or not use_multi:
+                image_inputs.append({"imageId": uploaded_ids[0], "purpose": "first-frame"})
+                if len(uploaded_ids) >= 2:
+                    image_inputs.append({"imageId": uploaded_ids[1], "purpose": "last-frame"})
+            else:
+                if len(uploaded_ids) == 1:
+                    image_inputs.append({"imageId": uploaded_ids[0], "purpose": "reference-asset"})
+                else:
+                    for iid in uploaded_ids:
+                        image_inputs.append({"imageId": iid, "purpose": "reference-asset"})
+
+            payload["workspace_id"] = ws_id
+            payload["image_inputs"] = image_inputs
 
         async with httpx.AsyncClient(timeout=45.0) as client:
             headers = await self._auth_headers(extra={"Content-Type": "application/json"})
@@ -180,8 +260,10 @@ class TrycenaClient:
             data = resp.json() if resp.content else {}
             nested_task = data.get("task") if isinstance(data, dict) and isinstance(data.get("task"), dict) else {}
             nested_data = data.get("data") if isinstance(data, dict) and isinstance(data.get("data"), dict) else {}
+            task_ids_list = data.get("taskIds") if isinstance(data, dict) and isinstance(data.get("taskIds"), list) else []
             task_id = str(
                 (data.get("taskId") if isinstance(data, dict) else None)
+                or (task_ids_list[0] if task_ids_list else None)
                 or (data.get("task_id") if isinstance(data, dict) else None)
                 or (data.get("id") if isinstance(data, dict) else None)
                 or nested_task.get("id")

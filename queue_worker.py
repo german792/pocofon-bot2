@@ -836,6 +836,9 @@ class GenerationQueue:
 
         try:
             if backend == "trycena":
+                prepared_refs = [
+                    image_utils.prepare_user_image(b, job.ratio or "16:9") for b in all_refs if b
+                ]
                 task_id = await self.trycena_client.create_video_task(
                     model_info=model_info,
                     prompt=job.prompt,
@@ -843,6 +846,8 @@ class GenerationQueue:
                     resolution=job.resolution,
                     ratio=job.ratio,
                     generate_audio=job.generate_audio,
+                    ref_images=prepared_refs,
+                    ref_mode=job.ref_mode,
                 )
 
             elif backend == "ark_text":
