@@ -103,7 +103,8 @@
     "boborp7",
     "blanklw_flast",
     "zzzzzzzetnik",
-    "rxdof"
+    "rxdof",
+    "tafonu"
   ],
   "allowed_user_ids": [
     7148172629,
@@ -920,6 +921,14 @@
       "username": "blanklw_FLast",
       "name": "blanklw",
       "added_at": 1795851293.0669858,
+      "added_by": "group_-1004328649380",
+      "role": "user"
+    },
+    "tafonu": {
+      "user_id": 8614961056,
+      "username": "Tafonu",
+      "name": "GB27",
+      "added_at": 1795888413.308832,
       "added_by": "group_-1004328649380",
       "role": "user"
     }
