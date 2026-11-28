@@ -177,10 +177,47 @@ class TrycenaClient:
                     msg = resp.text[:250]
                 raise RuntimeError(f"Ошибка запуска генерации ({resp.status_code}): {msg}")
 
-            data = resp.json()
-            task_id = str(data.get("taskId") or data.get("task_id") or data.get("id") or "")
+            data = resp.json() if resp.content else {}
+            nested_task = data.get("task") if isinstance(data, dict) and isinstance(data.get("task"), dict) else {}
+            nested_data = data.get("data") if isinstance(data, dict) and isinstance(data.get("data"), dict) else {}
+            task_id = str(
+                (data.get("taskId") if isinstance(data, dict) else None)
+                or (data.get("task_id") if isinstance(data, dict) else None)
+                or (data.get("id") if isinstance(data, dict) else None)
+                or nested_task.get("id")
+                or nested_task.get("taskId")
+                or nested_data.get("taskId")
+                or nested_data.get("task_id")
+                or nested_data.get("id")
+                or ""
+            ).strip()
             if not task_id:
-                raise RuntimeError("Сервер не вернул ID задачи генерации.")
+                logger.warning(f"[trycena] POST /api/generate-video returned no direct taskId: {resp.text[:400]}")
+                # Fallback: grab the newly created task from /api/user-tasks
+                try:
+                    ut = await client.get(f"{self.base_url}/api/user-tasks", headers=await self._auth_headers())
+                    if ut.status_code == 200:
+                        tasks = ut.json().get("tasks") or []
+                        now_ms = int(time.time() * 1000)
+                        for t in tasks:
+                            if not isinstance(t, dict):
+                                continue
+                            created = int(t.get("created_at") or 0)
+                            if (
+                                t.get("model") == model_id
+                                and (t.get("prompt") or "").strip() == (prompt or "").strip()
+                                and abs(now_ms - created) < 30000
+                            ):
+                                task_id = str(t.get("id") or "").strip()
+                                break
+                        if not task_id and tasks and isinstance(tasks[0], dict):
+                            created0 = int(tasks[0].get("created_at") or 0)
+                            if abs(now_ms - created0) < 15000:
+                                task_id = str(tasks[0].get("id") or "").strip()
+                except Exception as fb_err:
+                    logger.warning(f"[trycena] Fallback /api/user-tasks lookup failed: {fb_err}")
+            if not task_id:
+                raise RuntimeError(f"Сервер не вернул ID задачи генерации ({resp.text[:160]}).")
             return task_id
 
     async def get_task(self, task_id: str) -> Dict[str, Any]:
