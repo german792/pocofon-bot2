@@ -81,6 +81,7 @@ class TrycenaClient:
         self._jwt: str = ""
         self._jwt_expires_at: float = 0.0
         self._workspace_id: Optional[int] = None
+        self._scene_id: Optional[int] = None
         self._lock = asyncio.Lock()
 
     def get_full_url(self, url_or_path: str) -> str:
@@ -140,29 +141,45 @@ class TrycenaClient:
         return h
 
     async def _ensure_workspace(self) -> int:
-        """Return an active workspace ID on trycena.studio for uploading photo references."""
-        if self._workspace_id is not None:
+        """Return an active workspace ID (and cache its scene_id) for uploading photo references."""
+        if self._workspace_id is not None and self._scene_id is not None:
             return self._workspace_id
         async with httpx.AsyncClient(timeout=20.0) as client:
             headers = await self._auth_headers(extra={"Content-Type": "application/json"})
-            r = await client.get(f"{self.base_url}/api/workspaces", headers=headers)
-            if r.status_code == 200:
-                ws_list = r.json().get("data") or []
-                if ws_list and isinstance(ws_list[0], dict) and ws_list[0].get("id"):
-                    self._workspace_id = int(ws_list[0]["id"])
-                    return self._workspace_id
-            # Create one if none exists yet
-            rc = await client.post(
-                f"{self.base_url}/api/workspaces",
-                headers=headers,
-                json={"name": "PocoAI Refs"},
-            )
-            if rc.status_code in (200, 201):
-                ws = rc.json().get("data") or rc.json()
-                if isinstance(ws, dict) and ws.get("id"):
-                    self._workspace_id = int(ws["id"])
-                    return self._workspace_id
-            raise RuntimeError(f"Не удалось подготовить рабочее пространство для референсов ({rc.status_code}).")
+            if self._workspace_id is None:
+                r = await client.get(f"{self.base_url}/api/workspaces", headers=headers)
+                if r.status_code == 200:
+                    ws_list = r.json().get("data") or []
+                    if ws_list and isinstance(ws_list[0], dict) and ws_list[0].get("id"):
+                        self._workspace_id = int(ws_list[0]["id"])
+                if self._workspace_id is None:
+                    rc = await client.post(
+                        f"{self.base_url}/api/workspaces",
+                        headers=headers,
+                        json={"name": "PocoAI Refs"},
+                    )
+                    if rc.status_code in (200, 201):
+                        ws = rc.json().get("data") or rc.json()
+                        if isinstance(ws, dict) and ws.get("id"):
+                            self._workspace_id = int(ws["id"])
+                    else:
+                        raise RuntimeError(
+                            f"Не удалось подготовить рабочее пространство для референсов ({rc.status_code})."
+                        )
+
+            # Fetch workspace detail to obtain an active scene_id (prefer non-special Scene 1)
+            if self._scene_id is None and self._workspace_id is not None:
+                rd = await client.get(f"{self.base_url}/api/workspaces/{self._workspace_id}", headers=headers)
+                if rd.status_code == 200:
+                    scenes = (rd.json().get("data") or {}).get("scenes") or []
+                    non_special = [s for s in scenes if isinstance(s, dict) and not s.get("is_special")]
+                    chosen = non_special[0] if non_special else (scenes[0] if scenes else None)
+                    if isinstance(chosen, dict) and chosen.get("id"):
+                        self._scene_id = int(chosen["id"])
+
+            if self._workspace_id is None:
+                raise RuntimeError("Не удалось получить рабочее пространство для референсов.")
+            return self._workspace_id
 
     async def upload_reference_image(self, image_bytes: bytes, idx: int = 1) -> int:
         """Upload a photo reference to the active workspace and return its imageId."""
@@ -229,18 +246,19 @@ class TrycenaClient:
                 uploaded_ids.append(await self.upload_reference_image(img_bytes, idx=idx))
 
             image_inputs: List[Dict[str, Any]] = []
-            if ref_mode == "frames" or not use_multi:
+            if len(uploaded_ids) == 1:
                 image_inputs.append({"imageId": uploaded_ids[0], "purpose": "first-frame"})
-                if len(uploaded_ids) >= 2:
-                    image_inputs.append({"imageId": uploaded_ids[1], "purpose": "last-frame"})
+            elif ref_mode == "frames" or not use_multi:
+                image_inputs.append({"imageId": uploaded_ids[0], "purpose": "first-frame"})
+                image_inputs.append({"imageId": uploaded_ids[1], "purpose": "last-frame"})
             else:
-                if len(uploaded_ids) == 1:
-                    image_inputs.append({"imageId": uploaded_ids[0], "purpose": "reference-asset"})
-                else:
-                    for iid in uploaded_ids:
-                        image_inputs.append({"imageId": iid, "purpose": "reference-asset"})
+                image_inputs.append({"imageId": uploaded_ids[0], "purpose": "first-frame"})
+                for iid in uploaded_ids[1:]:
+                    image_inputs.append({"imageId": iid, "purpose": "reference-asset"})
 
             payload["workspace_id"] = ws_id
+            if self._scene_id is not None:
+                payload["scene_id"] = self._scene_id
             payload["image_inputs"] = image_inputs
 
         async with httpx.AsyncClient(timeout=45.0) as client:

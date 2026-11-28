@@ -87,7 +87,7 @@ router.message.middleware(user_access.AccessControlMiddleware())
 router.callback_query.middleware(user_access.AccessControlMiddleware())
 
 # Marker of the code version (visible in the menu) to confirm the latest bot.py is deployed
-BUILD_ID = "poco-v14-trycena-refs-2026-11-28"
+BUILD_ID = "poco-v15-trycena-i2v-2026-11-28"
 
 
 class UserInputState(StatesGroup):
