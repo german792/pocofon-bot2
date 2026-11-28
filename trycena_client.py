@@ -80,6 +80,7 @@ class TrycenaClient:
         ).strip()
         self._jwt: str = ""
         self._jwt_expires_at: float = 0.0
+        self._org_id: str = (os.getenv("TRYCENA_ORG_ID") or "").strip()
         self._workspace_id: Optional[int] = None
         self._scene_id: Optional[int] = None
         self._lock = asyncio.Lock()
@@ -101,17 +102,39 @@ class TrycenaClient:
                 raise RuntimeError("Не настроена сессия генерации видео (TRYCENA_DB_JWT / TRYCENA_SESSION_ID).")
 
             async with httpx.AsyncClient(timeout=20.0) as client:
+                common_headers = {
+                    "Origin": self.base_url,
+                    "Referer": f"{self.base_url}/",
+                    "User-Agent": (
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+                    ),
+                }
+                if not self._org_id:
+                    try:
+                        rc = await client.get(
+                            f"{self.clerk_url}/v1/client",
+                            params={"__clerk_db_jwt": self.db_jwt, "_clerk_js_version": "5.0.0"},
+                            headers=common_headers,
+                        )
+                        if rc.status_code == 200:
+                            cd = rc.json().get("response") or rc.json()
+                            sessions = cd.get("sessions") or []
+                            if sessions and isinstance(sessions[0], dict):
+                                orgs = (sessions[0].get("user") or {}).get("organization_memberships") or []
+                                if orgs and isinstance(orgs[0], dict):
+                                    oid = (orgs[0].get("organization") or {}).get("id")
+                                    if oid:
+                                        self._org_id = str(oid)
+                    except Exception as org_err:
+                        logger.debug(f"[trycena] Org lookup note: {org_err}")
+
+                token_data = {"organization_id": self._org_id} if self._org_id else None
                 resp = await client.post(
                     f"{self.clerk_url}/v1/client/sessions/{self.session_id}/tokens",
                     params={"__clerk_db_jwt": self.db_jwt, "_clerk_js_version": "5.0.0"},
-                    headers={
-                        "Origin": self.base_url,
-                        "Referer": f"{self.base_url}/",
-                        "User-Agent": (
-                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-                        ),
-                    },
+                    headers=common_headers,
+                    data=token_data,
                 )
                 if resp.status_code >= 400:
                     raise RuntimeError(f"Сессия истекла ({resp.status_code}). Обновите токен сессии.")
