@@ -238,11 +238,12 @@ class TrycenaClient:
             st = str(task.get("status") or "processing").lower()
             if st in ("completed", "done", "succeeded"):
                 vurl = str(task.get("video_url") or task.get("videoUrl") or "")
-                return {"status": "COMPLETED", "video_url": self.get_full_url(vurl), "progress": 1.0}
+                full = self.get_full_url(vurl)
+                return {"status": "succeeded", "videoUrl": full, "video_url": full, "progress": 1.0}
             if st in ("failed", "error", "cancelled"):
                 err = str(task.get("error_message") or task.get("error") or "Генерация завершилась с ошибкой.")
-                return {"status": "FAILED", "error": err}
-            return {"status": "PROCESSING", "progress": 0.45}
+                return {"status": "failed", "error": err}
+            return {"status": "processing", "progress": 0.45}
 
     async def download_video(self, url_or_path: str) -> bytes:
         full_url = self.get_full_url(url_or_path)

@@ -1193,19 +1193,29 @@ class GenerationQueue:
                     break
                 continue
 
-            status = task_info.get("status")
+            status = str(task_info.get("status") or "").strip().lower()
             srv_progress = task_info.get("progress")
             logger.info(f"Task {task_id} status: {status} ({elapsed}s)")
 
-            if status == "succeeded":
-                if backend in ("promptwise_image", "qwen_image", "davinci_image"):
-                    media_url = task_info.get("imageUrl") or task_info.get("videoUrl")
+            if status in ("succeeded", "completed", "done"):
+                if backend in ("promptwise_image", "qwen_image", "davinci_image", "loremotion_image", "gencpu_image", "ark_image"):
+                    media_url = (
+                        task_info.get("imageUrl")
+                        or task_info.get("image_url")
+                        or task_info.get("videoUrl")
+                        or task_info.get("video_url")
+                    )
                 elif backend in ("promptwise_voice", "promptwise_audio", "davinci_voice", "davinci_music"):
-                    media_url = task_info.get("audioUrl") or task_info.get("videoUrl")
+                    media_url = (
+                        task_info.get("audioUrl")
+                        or task_info.get("audio_url")
+                        or task_info.get("videoUrl")
+                        or task_info.get("video_url")
+                    )
                 else:
-                    media_url = task_info.get("videoUrl")
+                    media_url = task_info.get("videoUrl") or task_info.get("video_url")
                 break
-            elif status == "failed":
+            elif status in ("failed", "error", "cancelled"):
                 err_str = str(task_info.get("error", "Неизвестная ошибка"))
                 if backend == "promptwise" and any(
                     k in err_str.lower()
