@@ -100,7 +100,8 @@
     "paveldurka1338",
     "kling45pro",
     "wan3video",
-    "boborp7"
+    "boborp7",
+    "blanklw_flast"
   ],
   "allowed_user_ids": [
     7148172629,
@@ -909,6 +910,14 @@
       "username": "",
       "name": "GB27",
       "added_at": 1795711206.978935,
+      "added_by": "group_-1004328649380",
+      "role": "user"
+    },
+    "blanklw_flast": {
+      "user_id": 8871319864,
+      "username": "blanklw_FLast",
+      "name": "blanklw",
+      "added_at": 1795851293.0669858,
       "added_by": "group_-1004328649380",
       "role": "user"
     }
