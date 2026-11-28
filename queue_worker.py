@@ -19,6 +19,7 @@ from api_client import (
 from loremotion_client import LoreMotionClient
 from gencpu_client import GenCPUClient
 from ark_client import ArkClient
+from trycena_client import TrycenaClient
 from config import MODELS, BASE_DIR, DEFAULT_MODEL, MAX_CONCURRENT_JOBS, calculate_credit_cost
 import image_utils
 import history_manager
@@ -198,11 +199,13 @@ class GenerationQueue:
         loremotion_client: Optional[LoreMotionClient] = None,
         gencpu_client: Optional[GenCPUClient] = None,
         ark_client: Optional[ArkClient] = None,
+        trycena_client: Optional[TrycenaClient] = None,
     ):
         self.bot = bot
         self.loremotion_client = loremotion_client or LoreMotionClient()
         self.gencpu_client = gencpu_client or GenCPUClient()
         self.ark_client = ark_client or ArkClient()
+        self.trycena_client = trycena_client or TrycenaClient()
         self.api_client = api_client
         self.v2_client = v2_client
         self.grok_client = grok_client
@@ -359,6 +362,8 @@ class GenerationQueue:
                 self.queue.task_done()
 
     def _get_client_for_backend(self, backend: str):
+        if backend == "trycena":
+            return self.trycena_client
         if backend in ("ark_video", "ark_image", "ark_text"):
             return self.ark_client
         if backend in ("loremotion", "loremotion_image"):
@@ -830,7 +835,17 @@ class GenerationQueue:
         all_refs = job.get_all_ref_images()
 
         try:
-            if backend == "ark_text":
+            if backend == "trycena":
+                task_id = await self.trycena_client.create_video_task(
+                    model_info=model_info,
+                    prompt=job.prompt,
+                    duration=job.duration if job.duration > 0 else 5,
+                    resolution=job.resolution,
+                    ratio=job.ratio,
+                    generate_audio=job.generate_audio,
+                )
+
+            elif backend == "ark_text":
                 start_ts = asyncio.get_event_loop().time()
                 prepared_refs = [
                     image_utils.prepare_user_image(b, "1:1") for b in all_refs if b

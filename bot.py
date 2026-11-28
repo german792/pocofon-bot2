@@ -72,6 +72,7 @@ from config import (
 from loremotion_client import LoreMotionClient
 from gencpu_client import GenCPUClient
 from ark_client import ArkClient
+from trycena_client import TrycenaClient
 from queue_worker import GenerationQueue, GenerationJob
 from watermark_utils import extract_frame_from_video, extract_audio_from_video, overlay_grid_video
 
@@ -86,7 +87,7 @@ router.message.middleware(user_access.AccessControlMiddleware())
 router.callback_query.middleware(user_access.AccessControlMiddleware())
 
 # Marker of the code version (visible in the menu) to confirm the latest bot.py is deployed
-BUILD_ID = "poco-v12-ark-2026-11-23"
+BUILD_ID = "poco-v13-trycena-2026-11-28"
 
 
 class UserInputState(StatesGroup):
@@ -6226,11 +6227,13 @@ async def main():
     loremotion_client = LoreMotionClient()
     gencpu_client = GenCPUClient()
     ark_client = ArkClient()
+    trycena_client = TrycenaClient()
     queue = GenerationQueue(
         bot=bot,
         loremotion_client=loremotion_client,
         gencpu_client=gencpu_client,
         ark_client=ark_client,
+        trycena_client=trycena_client,
     )
 
     dp["queue"] = queue
